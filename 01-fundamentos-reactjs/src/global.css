@@ -7,8 +7,10 @@
   --gray-700: #29292e;
   --gray-800: #202024;
   --gray-900: #121214;
-
+  --green-300: #08837e;
   --green-500: #00875f;
+
+  --red-500: #F75A68
 }
 * {
   margin: 0;
@@ -16,7 +18,10 @@
   box-sizing: border-box;
 }
 
-
+:focus {
+  outline: transparent;
+  box-shadow: 0 0 0 2px var(--green-500) ;
+}
 body {
   background: var(--gray-900);
   color: var(--gray-300);
