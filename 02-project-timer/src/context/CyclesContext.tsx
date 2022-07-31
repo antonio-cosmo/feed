@@ -4,18 +4,10 @@ import {
   ReactNode,
   useContext,
   useEffect,
+  useReducer,
   useState,
 } from 'react'
-
-interface Cycle {
-  id: string
-  task: string
-  minutesAmount: number
-  startDate: Date
-  interruptDate?: Date
-  finishedDate?: Date
-}
-
+import { cyclesReducer, Cycle, ActionTypes } from '../reducers/cyclesReducer'
 type formData = Pick<Cycle, 'task' | 'minutesAmount'>
 
 interface CycleContextData {
@@ -36,9 +28,13 @@ const CyclesContext = createContext({} as CycleContextData)
 export function CyclesContextProvider({
   children,
 }: CyclesContextProviderProps) {
-  const [cycles, setCycles] = useState<Cycle[]>([])
-  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
+  const [cyclesState, dispatch] = useReducer(cyclesReducer, {
+    cycles: [],
+    activeCycleId: null,
+  })
+
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
+  const { cycles, activeCycleId } = cyclesState
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
@@ -53,16 +49,13 @@ export function CyclesContextProvider({
         )
 
         if (secondsDifference >= totalSeconds) {
-          setCycles((state) => {
-            return state.map((cycle) => {
-              if (cycle.id === activeCycleId) {
-                return { ...cycle, finishedDate: new Date() }
-              }
-              return cycle
-            })
-          })
           setAmountSecondsPassed(totalSeconds)
-          setActiveCycleId(null)
+          dispatch({
+            type: ActionTypes.MARK_CURRENT_CYCLE_AS_FINISHED,
+            payload: {
+              activeCycleId,
+            },
+          })
           clearInterval(interval)
         } else {
           setAmountSecondsPassed(secondsDifference)
@@ -83,21 +76,21 @@ export function CyclesContextProvider({
       startDate: new Date(),
     }
 
-    setCycles((state) => [...state, newCycle])
-    setActiveCycleId(newCycle.id)
+    dispatch({
+      type: ActionTypes.ADD_NEW_CYCLE,
+      payload: { newCycle },
+    })
+
     setAmountSecondsPassed(0)
   }
 
   const interruptCycle = () => {
-    setCycles((state) => {
-      return state.map((cycle) => {
-        if (cycle.id === activeCycleId) {
-          return { ...cycle, interruptDate: new Date() }
-        }
-        return cycle
-      })
+    dispatch({
+      type: ActionTypes.INTERRUP_CURRENT_CYCLE,
+      payload: {
+        activeCycleId,
+      },
     })
-    setActiveCycleId(null)
   }
 
   return (
