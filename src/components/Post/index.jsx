@@ -1,7 +1,5 @@
-import { format, formatDistanceToNow } from 'date-fns';
-import ptBR from 'date-fns/locale/pt-BR'
-import { useState } from 'react';
-import { formatDate } from '../../util/formatDate';
+import { useState } from 'react'
+import { formatDate } from '../../util/formatDate'
 import { Avatar } from '../Avatar'
 import { Comment } from '../Comment'
 import styles from './styles.module.css'
@@ -12,7 +10,14 @@ export const Post = ({ author, content, publishedAt }) => {
 
   const publishedDateRelativeToNow = formatDate.distance(publishedAt)
 
-  const [comments, setComments] = useState([])
+  const [comments, setComments] = useState(() => {
+
+    const storage = localStorage.getItem('feed:comments')
+    if (!storage) return []
+
+    return JSON.parse(storage)
+
+  })
   const [newComment, setNewComment] = useState('')
 
   const handleComments = (event) => {
@@ -21,7 +26,12 @@ export const Post = ({ author, content, publishedAt }) => {
       date: new Date(),
       value: newComment
     }
-    setComments([...comments, comment])
+    setComments(prevs => [...prevs, comment])
+
+    const commentsSetStorage = JSON.stringify([...comments, comment])
+
+    localStorage.setItem('feed:comments', commentsSetStorage)
+
     setNewComment('')
   };
 
@@ -92,7 +102,7 @@ export const Post = ({ author, content, publishedAt }) => {
 
       <div className={styles.commentList}>
         {comments.map(comment => {
-          return <Comment key={comment} content={comment} onDeleteComment={deleteComment} />
+          return <Comment key={comment.date} content={comment} onDeleteComment={deleteComment} />
         })}
       </div>
     </article>

@@ -1,15 +1,17 @@
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, parseJSON } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR'
 
 export const formatDate = {
   value: (date) => {
-    return format(date, "d 'de' LLLL 'às' HH:mm'h'", {
+    const dt = parseJSON(date)
+    return format(dt, "d 'de' LLLL 'às' HH:mm'h'", {
       locale: ptBR
     });
   },
 
   distance: (date) => {
-    return formatDistanceToNow(date, {
+    const dt = parseJSON(date)
+    return formatDistanceToNow(dt, {
       locale: ptBR,
       addSuffix: true
     });
